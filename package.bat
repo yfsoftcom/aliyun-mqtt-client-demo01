@@ -1,5 +1,4 @@
 @echo off
-mvn package
 mkdir release
 mkdir release\target
 mkdir release\target\lib

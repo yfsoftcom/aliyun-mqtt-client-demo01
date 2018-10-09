@@ -9,5 +9,6 @@ This is a demo project for mqtt base on Aliyun-iot framework.
 
 4. package target
    1) Run: `mvn package`
-   2) Run: `java -jar mqttclient.jar http://192.168.100.100:9090/api`
+   2) Run: `package.bat`
+   3) Run: `run.bat`
 
