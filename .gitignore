@@ -1,0 +1,52 @@
+# maven,gradle ignore
+target/
+_build/
+build/
+_site/
+.gradle*
+dependency-reduced-pom.xml
+test.*
+
+# eclipse ignore
+.settings/
+.project
+.classpath
+
+# idea ignore
+.idea/
+*.ipr
+*.iml
+*.iws
+
+# svn
+.svn/
+
+# temp ignore
+*.log.*
+*.log
+*.out
+*.cache
+*.diff
+*.patch
+*.tmp
+*.bak
+*.bkp
+*.swp
+~$*
+*.pyc
+*.class
+draft*
+
+# mac folder config file
+.DS_Store
+# windows image file caches
+Thumbs.db
+# windows folder config file
+Desktop.ini
+
+antx.properties
+*.classpath
+*.project
+*.settings*
+/target
+/release
