@@ -5,6 +5,7 @@
 package com.aliyun.iot.demo.iothub;
 
 import java.net.InetAddress;
+import java.util.Properties;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -13,6 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 
+import java.io.InputStream;
 import java.io.IOException;
 import okhttp3.*;
 
@@ -68,13 +70,23 @@ public class SimpleClient4IOT {
     private static String apiurl = "http://localhost:8080/api";
 
     public static void main(String... strings) throws Exception {
-        
+        Properties properties = new Properties();
+        // 使用ClassLoader加载properties配置文件生成对应的输入流
+        InputStream in = SimpleClient4IOT.class.getClassLoader().getResourceAsStream("config.properties");
+        // 使用properties对象加载输入流
+        properties.load(in);
+        //获取key对应的value值
+        deviceName = properties.getProperty("deviceName");
+        productKey = properties.getProperty("productKey");
+        secret = properties.getProperty("secret");
+        //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
+        String clientId = properties.getProperty("clientId"); //InetAddress.getLocalHost().getHostAddress();
+
         if(strings.length > 0){
             apiurl = strings[0];
         }
         System.out.println(apiurl);
-        //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
-        String clientId = "1"; //InetAddress.getLocalHost().getHostAddress();
+        
 
         //设备认证
         Map<String, String> params = new HashMap<String, String>();
