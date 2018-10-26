@@ -75,9 +75,14 @@ public class SimpleClient4IOT {
         InputStream in = SimpleClient4IOT.class.getClassLoader().getResourceAsStream("config.properties");
         // 使用properties对象加载输入流
         properties.load(in);
-        //获取key对应的value值
+        // 获取key对应的value值
         deviceName = properties.getProperty("deviceName");
         productKey = properties.getProperty("productKey");
+
+        // 更新主题
+        subTopic = "/" + productKey + "/" + deviceName + "/get";
+        pubTopic = "/" + productKey + "/" + deviceName + "/update";
+        
         secret = properties.getProperty("secret");
         //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
         String clientId = properties.getProperty("clientId"); //InetAddress.getLocalHost().getHostAddress();
@@ -85,7 +90,12 @@ public class SimpleClient4IOT {
         if(strings.length > 0){
             apiurl = strings[0];
         }
-        System.out.println(apiurl);
+        System.out.println("[deviceName]:" + deviceName);
+        System.out.println("[productKey]:" + productKey);
+        System.out.println("[secret]:" + secret);
+        System.out.println("[subTopic]:" + subTopic);
+        System.out.println("[pubTopic]:" + pubTopic);
+        System.out.println("[apiurl]:" + apiurl);
         
 
         //设备认证

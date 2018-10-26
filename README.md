@@ -12,3 +12,8 @@ This is a demo project for mqtt base on Aliyun-iot framework.
    2) Run: `package.bat`
    3) Run: `run.bat`
 
+
+###### Changelog
+
+Fixbug:
+- topic can't be changed.
