@@ -33,6 +33,8 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import com.aliyun.iot.util.LogUtil;
 import com.aliyun.iot.util.SignUtil;
 
+import com.aliyun.iot.RedisMsgPubSubListener;
+import redis.clients.jedis.Jedis;
 /**
  * IoT套件JAVA版设备接入demo
  */
@@ -55,9 +57,9 @@ public class SimpleClient4IOT {
             // e.printStackTrace();
             return "ERROR";
         }
-        
+
     }
-	
+
 	/******这里是客户端需要的参数*******/
     public static String deviceName = "newgui";
     public static String productKey = "a15QCAOJErA";
@@ -82,7 +84,7 @@ public class SimpleClient4IOT {
         // 更新主题
         subTopic = "/" + productKey + "/" + deviceName + "/get";
         pubTopic = "/" + productKey + "/" + deviceName + "/update";
-        
+
         secret = properties.getProperty("secret");
         //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
         String clientId = properties.getProperty("clientId"); //InetAddress.getLocalHost().getHostAddress();
@@ -96,7 +98,7 @@ public class SimpleClient4IOT {
         System.out.println("[subTopic]:" + subTopic);
         System.out.println("[pubTopic]:" + pubTopic);
         System.out.println("[apiurl]:" + apiurl);
-        
+
 
         //设备认证
         Map<String, String> params = new HashMap<String, String>();
@@ -116,10 +118,31 @@ public class SimpleClient4IOT {
 
         System.err.println("mqttclientId=" + mqttclientId);
 
-        connectMqtt(targetServer, mqttclientId, mqttUsername, mqttPassword, deviceName);
+        final MqttClient sampleClient = connectMqtt(targetServer, mqttclientId, mqttUsername, mqttPassword, deviceName);
+
+        // 订阅 Redis 的消息，用于转发消息给设备
+        Jedis jedis = new Jedis("localhost");
+        RedisMsgPubSubListener listener = new RedisMsgPubSubListener(){
+            @Override
+            public void onMessage(String channel, String content) {
+                // System.out.println("channel:" + channel + " receives message :" + content);
+
+                try{
+                    MqttMessage message = new MqttMessage(content.getBytes("utf-8"));
+                    message.setQos(0);
+                    LogUtil.print("Publish Message:" + content);
+                    sampleClient.publish(pubTopic, message);
+                }catch(Exception e){
+                    LogUtil.print("Publish Error:" + e.getMessage());
+                    e.printStackTrace();
+                }
+                //*/
+            }
+        };
+        jedis.subscribe(listener, "$s2d/publish");
     }
 
-    public static void connectMqtt(String url, String clientId, String mqttUsername,
+    public static MqttClient connectMqtt(String url, String clientId, String mqttUsername,
                                    String mqttPassword, final String deviceName) throws Exception {
         MemoryPersistence persistence = new MemoryPersistence();
         SSLSocketFactory socketFactory = createSSLSocket();
@@ -166,15 +189,7 @@ public class SimpleClient4IOT {
         });
         LogUtil.print("连接成功:---");
 
-        //这里测试发送一条消息
-        String content = "{'content':'msg from :" + clientId + "," + System.currentTimeMillis() + "'}";
-
-        MqttMessage message = new MqttMessage(content.getBytes("utf-8"));
-        message.setQos(0);
-        //System.out.println(System.currentTimeMillis() + "消息发布:---");
-        sampleClient.publish(pubTopic, message);
-
-        //一次订阅永久生效 
+        //一次订阅永久生效
         //这个是第一种订阅topic方式，回调到统一的callback
         sampleClient.subscribe(subTopic);
 
@@ -216,6 +231,7 @@ public class SimpleClient4IOT {
                 });
             }
         });
+        return sampleClient;
     }
 
     private static SSLSocketFactory createSSLSocket() throws Exception {

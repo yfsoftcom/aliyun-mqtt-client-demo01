@@ -13,7 +13,25 @@ This is a demo project for mqtt base on Aliyun-iot framework.
    3) Run: `run.bat`
 
 
+## Publish Message To Device
+
+Use Redis Pub/Sub to publish message to device.
+
+- Test from the docker
+  - Run command to publish
+
+    ```
+    $ docker exec -it redis_server redis-cli
+    $ SUBSCRIBE $s2d/publish
+    $ publish $s2d/publish test
+    ```
+
+
 ###### Changelog
+
+Add:
+- Redis
+- New Thread to publish message
 
 Fixbug:
 - topic can't be changed.
