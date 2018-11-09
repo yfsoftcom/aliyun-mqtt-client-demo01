@@ -26,12 +26,29 @@ Use Redis Pub/Sub to publish message to device.
     $ publish $s2d/publish test
     ```
 
+#### Known Issue
+
+- 连接失败,原因:已断开连接 (32109)
+
+  ```java
+  2018-11-09 09:12:52.788 - [SimpleClient4IOT.java] - connectionLost(177):连接失败,原因:已断开连接 (32109) - java.io.EOFException
+已断开连接 (32109) - java.io.EOFException
+        at org.eclipse.paho.client.mqttv3.internal.CommsReceiver.run(CommsReceiver.java:146)
+        at java.lang.Thread.run(Thread.java:745)
+Caused by: java.io.EOFException
+        at java.io.DataInputStream.readByte(DataInputStream.java:267)
+        at org.eclipse.paho.client.mqttv3.internal.wire.MqttInputStream.readMqttWireMessage(MqttInputStream.java:65)
+        at org.eclipse.paho.client.mqttv3.internal.CommsReceiver.run(CommsReceiver.java:107)
+        ... 1 more
+  ```
+
+  > 这个 bug 可能是应为多个终端链接了 服务器，导致服务器拒绝；如出现此情况，请关闭其他的链接客户端。
 
 ###### Changelog
 
 Add:
 - Redis
-- New Thread to publish message
+- publish message
 
 Fixbug:
 - topic can't be changed.

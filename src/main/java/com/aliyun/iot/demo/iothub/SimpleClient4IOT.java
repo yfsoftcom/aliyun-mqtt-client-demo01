@@ -61,9 +61,12 @@ public class SimpleClient4IOT {
     }
 
 	/******这里是客户端需要的参数*******/
-    public static String deviceName = "newgui";
-    public static String productKey = "a15QCAOJErA";
-    public static String secret = "h914uk0MPqdjL1ccmvOlVzNZPhos86yU";
+    public static String deviceName = "DemoDevice";
+    public static String productKey = "a1zaYjuTZdz";
+    public static String secret = "c5lW7rXBRQ9qlgE1nmNW8jaXKzPAFW2K";
+    public static String clientId = "1";
+
+    private static Boolean debug = false;
 
     //用于测试的topic
     private static String subTopic = "/" + productKey + "/" + deviceName + "/get";
@@ -71,27 +74,33 @@ public class SimpleClient4IOT {
 
     private static String apiurl = "http://localhost:8080/api";
 
-    public static void main(String... strings) throws Exception {
-        Properties properties = new Properties();
-        // 使用ClassLoader加载properties配置文件生成对应的输入流
-        InputStream in = SimpleClient4IOT.class.getClassLoader().getResourceAsStream("config.properties");
-        // 使用properties对象加载输入流
-        properties.load(in);
-        // 获取key对应的value值
-        deviceName = properties.getProperty("deviceName");
-        productKey = properties.getProperty("productKey");
+    public static void main(String... arguments) throws Exception {
 
+        if(arguments.length > 0){
+            apiurl = arguments[0];
+            if(arguments.length > 1){
+                debug = true;
+            }
+        }
+        System.out.println("[DEBUG] = " + String.valueOf(debug));
+        if(!debug){
+            Properties properties = new Properties();
+            // 使用ClassLoader加载properties配置文件生成对应的输入流
+            InputStream in = SimpleClient4IOT.class.getClassLoader().getResourceAsStream("config.properties");
+            // 使用properties对象加载输入流
+            properties.load(in);
+            // 获取key对应的value值
+            deviceName = properties.getProperty("deviceName");
+            productKey = properties.getProperty("productKey");
+            secret = properties.getProperty("secret");
+            //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
+            clientId = properties.getProperty("clientId"); //InetAddress.getLocalHost().getHostAddress();
+        }
         // 更新主题
         subTopic = "/" + productKey + "/" + deviceName + "/get";
         pubTopic = "/" + productKey + "/" + deviceName + "/update";
 
-        secret = properties.getProperty("secret");
-        //客户端设备自己的一个标记，建议是MAC或SN，不能为空，32字符内
-        String clientId = properties.getProperty("clientId"); //InetAddress.getLocalHost().getHostAddress();
-
-        if(strings.length > 0){
-            apiurl = strings[0];
-        }
+        
         System.out.println("[deviceName]:" + deviceName);
         System.out.println("[productKey]:" + productKey);
         System.out.println("[secret]:" + secret);
@@ -125,8 +134,6 @@ public class SimpleClient4IOT {
         RedisMsgPubSubListener listener = new RedisMsgPubSubListener(){
             @Override
             public void onMessage(String channel, String content) {
-                // System.out.println("channel:" + channel + " receives message :" + content);
-
                 try{
                     MqttMessage message = new MqttMessage(content.getBytes("utf-8"));
                     message.setQos(0);
@@ -189,6 +196,14 @@ public class SimpleClient4IOT {
         });
         LogUtil.print("连接成功:---");
 
+        try{
+            MqttMessage message = new MqttMessage("test".getBytes("utf-8"));
+            message.setQos(0);
+            sampleClient.publish(pubTopic, message);
+        }catch(Exception e){
+            LogUtil.print("Publish Error:" + e.getMessage());
+            e.printStackTrace();
+        }
         //一次订阅永久生效
         //这个是第一种订阅topic方式，回调到统一的callback
         sampleClient.subscribe(subTopic);
